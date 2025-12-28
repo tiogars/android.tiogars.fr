@@ -26,7 +26,7 @@ export const storageService = {
       this.saveApps(apps);
       return apps;
     } catch (error) {
-      throw new Error('Failed to import data: ' + (error as Error).message);
+      throw new Error(`Failed to import data: ${(error as Error).message}`);
     }
   },
 };
