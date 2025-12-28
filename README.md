@@ -19,7 +19,7 @@ A React TypeScript web application for managing your Android apps collection in 
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- Node.js 18+ and pnpm
 
 ### Installation
 
@@ -31,12 +31,12 @@ cd android-apps
 
 2. Install dependencies:
 ```bash
-npm install
+pnpm install
 ```
 
 3. Start the development server:
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 4. Open your browser and navigate to `http://localhost:5173`
@@ -44,7 +44,7 @@ npm run dev
 ### Building for Production
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 The built files will be in the `dist` directory.
