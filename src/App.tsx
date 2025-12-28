@@ -17,6 +17,8 @@ import {
   Brightness4,
   Brightness7,
   Add as AddIcon,
+  Shop as ShopIcon,
+  ImportExport as ImportExportIcon,
 } from '@mui/icons-material';
 import type { AndroidApp, ThemeMode } from './types';
 import { storageService } from './storageService';
@@ -149,15 +151,14 @@ function App() {
       <CssBaseline />
       <AppBar position="static">
         <Toolbar>
+          <ShopIcon sx={{ mr: 1 }} />
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Android Apps Manager
           </Typography>
-          <IconButton color="inherit" onClick={() => setIsImportExportOpen(true)}>
-            <Typography variant="button" sx={{ mr: 1 }}>
-              Import/Export
-            </Typography>
+          <IconButton color="inherit" onClick={() => setIsImportExportOpen(true)} aria-label="import/export">
+            <ImportExportIcon />
           </IconButton>
-          <IconButton color="inherit" onClick={toggleTheme}>
+          <IconButton color="inherit" onClick={toggleTheme} aria-label="toggle theme">
             {themeMode === 'dark' ? <Brightness7 /> : <Brightness4 />}
           </IconButton>
         </Toolbar>
