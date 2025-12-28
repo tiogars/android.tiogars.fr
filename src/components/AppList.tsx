@@ -9,7 +9,7 @@ import {
   Box,
   Avatar,
 } from '@mui/material';
-import { Edit, Delete, OpenInNew } from '@mui/icons-material';
+import { Edit, Delete, Storefront } from '@mui/icons-material';
 import type { AndroidApp } from '../types';
 
 interface AppListProps {
@@ -91,7 +91,7 @@ export default function AppList({ apps, onEdit, onDelete }: AppListProps) {
             <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
               <Button
                 size="small"
-                startIcon={<OpenInNew />}
+                startIcon={<Storefront />}
                 onClick={() => handleViewInPlayStore(app.packageName)}
               >
                 Play Store

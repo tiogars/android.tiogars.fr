@@ -17,6 +17,8 @@ import {
   Brightness4,
   Brightness7,
   Add as AddIcon,
+  Shop as ShopIcon,
+  ImportExport as ImportExportIcon,
 } from '@mui/icons-material';
 import type { AndroidApp, ThemeMode } from './types';
 import { storageService } from './storageService';
@@ -148,6 +150,40 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <AppBar position="static">
+        <Toolbar>
+          <ShopIcon sx={{ mr: 1 }} />
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Android Apps Manager
+          </Typography>
+          <IconButton color="inherit" onClick={() => setIsImportExportOpen(true)} aria-label="import/export">
+            <ImportExportIcon />
+          </IconButton>
+          <IconButton color="inherit" onClick={toggleTheme} aria-label="toggle theme">
+            {themeMode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+        <Box sx={{ mb: 3 }}>
+          <FilterPanel
+            allTags={allTags}
+            selectedTags={selectedTags}
+            onTagsChange={setSelectedTags}
+          />
+        </Box>
+
+        <AppList
+          apps={filteredApps}
+          onEdit={handleEditApp}
+          onDelete={handleDeleteApp}
+        />
+
+        {filteredApps.length === 0 && apps.length > 0 && (
+          <Box sx={{ textAlign: 'center', mt: 4 }}>
+            <Typography variant="h6" color="text.secondary">
+              No apps match the selected filters
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <AppBar position="static">
           <Toolbar>
