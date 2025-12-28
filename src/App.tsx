@@ -9,7 +9,8 @@ import {
   Typography,
   IconButton,
   Box,
-  Fab,
+  SpeedDial,
+  SpeedDialAction,
   Snackbar,
   Alert,
 } from '@mui/material';
@@ -17,6 +18,9 @@ import {
   Brightness4,
   Brightness7,
   Add as AddIcon,
+  FileUpload as ImportIcon,
+  FileDownload as ExportIcon,
+  Menu as MenuIcon,
   Shop as ShopIcon,
   ImportExport as ImportExportIcon,
 } from '@mui/icons-material';
@@ -35,6 +39,7 @@ function App() {
   const [editingApp, setEditingApp] = useState<AndroidApp | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
+  const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
     open: false,
     message: '',
@@ -236,14 +241,39 @@ function App() {
         <Footer />
       </Box>
 
-      <Fab
-        color="primary"
-        aria-label="add"
+      <SpeedDial
+        ariaLabel="Actions menu"
         sx={{ position: 'fixed', bottom: 16, right: 16 }}
-        onClick={handleAddNew}
+        icon={<MenuIcon />}
+        open={isSpeedDialOpen}
+        onOpen={() => setIsSpeedDialOpen(true)}
+        onClose={() => setIsSpeedDialOpen(false)}
       >
-        <AddIcon />
-      </Fab>
+        <SpeedDialAction
+          icon={<AddIcon />}
+          tooltipTitle="Add App"
+          onClick={() => {
+            handleAddNew();
+            setIsSpeedDialOpen(false);
+          }}
+        />
+        <SpeedDialAction
+          icon={<ImportIcon />}
+          tooltipTitle="Import"
+          onClick={() => {
+            setIsImportExportOpen(true);
+            setIsSpeedDialOpen(false);
+          }}
+        />
+        <SpeedDialAction
+          icon={<ExportIcon />}
+          tooltipTitle="Export"
+          onClick={() => {
+            handleExport();
+            setIsSpeedDialOpen(false);
+          }}
+        />
+      </SpeedDial>
 
       <AppFormDialog
         open={isFormOpen}
