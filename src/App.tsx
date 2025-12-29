@@ -69,20 +69,24 @@ function App() {
       // Extract package name from Play Store URL
       let packageName = '';
       if (sharedUrl && sharedUrl.includes('play.google.com')) {
-        const urlParams = new URLSearchParams(sharedUrl.split('?')[1]);
-        packageName = urlParams.get('id') || '';
+        const urlParts = sharedUrl.split('?');
+        if (urlParts.length > 1) {
+          const urlParams = new URLSearchParams(urlParts[1]);
+          packageName = urlParams.get('id') || '';
+        }
       }
 
       // Create a new app with shared data
-      const newApp: Partial<AndroidApp> = {
+      const newApp: AndroidApp = {
         id: crypto.randomUUID(),
         name: sharedTitle || '',
         packageName: packageName || '',
         description: sharedText || '',
         category: [],
+        icon: '',
       };
 
-      setEditingApp(newApp as AndroidApp);  
+      setEditingApp(newApp);  
       setIsFormOpen(true);  
 
       // Clear the URL parameters
