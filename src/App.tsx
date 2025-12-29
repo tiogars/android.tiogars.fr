@@ -32,6 +32,29 @@ import FilterPanel from './components/FilterPanel';
 import ImportExportDialog from './components/ImportExportDialog';
 import Footer from './components/Footer';
 
+/**
+ * Extracts the app name from a shared title.
+ * Google Play Store shares typically come in format: "Découvrez 'App Name' sur Google Play"
+ * This function extracts the text within quotes.
+ * @param title - The shared title from Google Play Store
+ * @returns The extracted app name, or the original title if no quotes found
+ */
+function extractAppNameFromTitle(title: string): string {
+  // Match text within single quotes (') or double quotes (")
+  const singleQuoteMatch = title.match(/['']([^'']+)['']/);
+  const doubleQuoteMatch = title.match(/[""]([^""]+)[""]/);
+  
+  if (singleQuoteMatch && singleQuoteMatch[1]) {
+    return singleQuoteMatch[1].trim();
+  }
+  if (doubleQuoteMatch && doubleQuoteMatch[1]) {
+    return doubleQuoteMatch[1].trim();
+  }
+  
+  // If no quotes found, return the original title
+  return title.trim();
+}
+
 function App() {
   const [apps, setApps] = useState<AndroidApp[]>([]);
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
@@ -82,9 +105,12 @@ function App() {
       }
 
       // Create a new app with shared data
+      // Extract app name from title (removes "Découvrez '...' sur Google Play" wrapper)
+      const appName = sharedTitle ? extractAppNameFromTitle(sharedTitle) : '';
+      
       const newApp: AndroidApp = {
         id: crypto.randomUUID(),
-        name: sharedTitle || '',
+        name: appName,
         packageName: packageName || '',
         description: sharedText || '',
         category: [],
