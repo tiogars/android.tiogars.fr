@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -9,7 +10,7 @@ import {
   Box,
   Avatar,
 } from '@mui/material';
-import { Edit, Delete, Storefront } from '@mui/icons-material';
+import { Edit, Delete, Storefront, Visibility } from '@mui/icons-material';
 import type { AndroidApp } from '../types';
 
 interface AppListProps {
@@ -89,13 +90,23 @@ export default function AppList({ apps, onEdit, onDelete }: AppListProps) {
             </CardContent>
 
             <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
-              <Button
-                size="small"
-                startIcon={<Storefront />}
-                onClick={() => handleViewInPlayStore(app.packageName)}
-              >
-                Play Store
-              </Button>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  size="small"
+                  component={Link}
+                  to={`/app/${app.id}`}
+                  startIcon={<Visibility />}
+                >
+                  View
+                </Button>
+                <Button
+                  size="small"
+                  startIcon={<Storefront />}
+                  onClick={() => handleViewInPlayStore(app.packageName)}
+                >
+                  Store
+                </Button>
+              </Box>
               <Box>
                 <IconButton
                   size="small"

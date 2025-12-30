@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import {
   ThemeProvider,
   createTheme,
   CssBaseline,
-  Container,
   AppBar,
   Toolbar,
   Typography,
@@ -23,12 +23,13 @@ import {
   Menu as MenuIcon,
   Shop as ShopIcon,
   ImportExport as ImportExportIcon,
+  Home as HomeIcon,
 } from '@mui/icons-material';
 import type { AndroidApp, ThemeMode } from './types';
 import { storageService } from './storageService';
-import AppList from './components/AppList';
+import Home from './components/Home';
+import AppDetail from './components/AppDetail';
 import AppFormDialog from './components/AppFormDialog';
-import FilterPanel from './components/FilterPanel';
 import ImportExportDialog from './components/ImportExportDialog';
 import Footer from './components/Footer';
 
@@ -71,9 +72,9 @@ function extractAppNameFromTitle(title: string): string {
 }
 
 function App() {
+  const navigate = useNavigate();
   const [apps, setApps] = useState<AndroidApp[]>([]);
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [editingApp, setEditingApp] = useState<AndroidApp | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
@@ -191,6 +192,11 @@ function App() {
     setIsFormOpen(true);
   };
 
+  const handleNavigateHome = () => {
+    navigate('/');
+    setIsSpeedDialOpen(false);
+  };
+
   const handleImport = async (jsonString: string) => {
     try {
       const importedApps = await storageService.importData(jsonString);
@@ -215,25 +221,6 @@ function App() {
     setSnackbar({ open: true, message: 'Data exported successfully', severity: 'success' });
   };
 
-  // Get all unique tags from apps
-  const allTags = useMemo(() => {
-    const tags = new Set<string>();
-    apps.forEach((app) => {
-      app.category.forEach((tag) => tags.add(tag));
-    });
-    return Array.from(tags).sort();
-  }, [apps]);
-
-  // Filter apps by selected tags
-  const filteredApps = useMemo(() => {
-    if (selectedTags.length === 0) {
-      return apps;
-    }
-    return apps.filter((app) =>
-      selectedTags.some((tag) => app.category.includes(tag))
-    );
-  }, [apps, selectedTags]);
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -253,37 +240,28 @@ function App() {
           </Toolbar>
         </AppBar>
 
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 8, flexGrow: 1 }}>
-          <Box sx={{ mb: 3 }}>
-            <FilterPanel
-              allTags={allTags}
-              selectedTags={selectedTags}
-              onTagsChange={setSelectedTags}
-            />
-          </Box>
-
-          <AppList
-            apps={filteredApps}
-            onEdit={handleEditApp}
-            onDelete={handleDeleteApp}
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Home
+                apps={apps}
+                onEdit={handleEditApp}
+                onDelete={handleDeleteApp}
+              />
+            }
           />
-
-          {filteredApps.length === 0 && apps.length > 0 && (
-            <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Typography variant="h6" color="text.secondary">
-                No apps match the selected filters
-              </Typography>
-            </Box>
-          )}
-
-          {apps.length === 0 && (
-            <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Typography variant="h6" color="text.secondary">
-                No apps yet. Click the + button to add your first app!
-              </Typography>
-            </Box>
-          )}
-        </Container>
+          <Route
+            path="/app/:id"
+            element={
+              <AppDetail
+                apps={apps}
+                onEdit={handleEditApp}
+                onDelete={handleDeleteApp}
+              />
+            }
+          />
+        </Routes>
 
         <Footer />
       </Box>
@@ -296,6 +274,11 @@ function App() {
         onOpen={() => setIsSpeedDialOpen(true)}
         onClose={() => setIsSpeedDialOpen(false)}
       >
+        <SpeedDialAction
+          icon={<HomeIcon />}
+          tooltipTitle="Home"
+          onClick={handleNavigateHome}
+        />
         <SpeedDialAction
           icon={<AddIcon />}
           tooltipTitle="Add App"
