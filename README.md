@@ -117,8 +117,9 @@ This makes it easy to quickly add apps to your collection directly from the Play
 
 Once installed, the PWA includes:
 - **Offline functionality**: Access your app collection without an internet connection
-- **Service Worker caching**: Fast loading and reliable performance
+- **Service Worker caching**: Fast loading and reliable performance powered by Workbox
 - **Installable**: Works like a native app on your device
+- **Automatic Asset Precaching**: All app assets are cached during installation for instant offline access
 
 ### Automatic Updates
 
@@ -132,8 +133,8 @@ The PWA automatically checks for updates and notifies you when a new version is 
 4. **Seamless Experience**: Updates are applied instantly without losing your data
 
 **How it works:**
-- Each deployment generates a unique version based on build timestamp
-- The service worker caches assets using this version
+- Each deployment generates a unique service worker version with content hashes
+- Workbox precaches all build assets (JS, CSS, HTML, images) during service worker installation
 - When a new deployment occurs, the old cache is automatically cleaned up
 - Your data in IndexedDB is never affected by updates
 
@@ -142,9 +143,10 @@ The PWA automatically checks for updates and notifies you when a new version is 
 - **React 19** - UI framework
 - **TypeScript** - Type-safe JavaScript
 - **Vite** - Build tool and dev server
+- **vite-plugin-pwa** - PWA automation with Workbox
 - **Material-UI (MUI)** - Component library
 - **IndexedDB** - Primary data persistence
-- **Service Worker** - Offline support and caching
+- **Workbox** - Service worker and caching strategies
 - **Web App Manifest** - PWA configuration
 
 ## License

@@ -34,7 +34,7 @@ async function getDB(): Promise<IDBPDatabase> {
   return dbPromise;
 }
 
-async function putAppsInTx(tx: IDBPTransaction<unknown, any, 'readwrite'>, apps: AndroidApp[]): Promise<void> {
+async function putAppsInTx(tx: IDBPTransaction<unknown, string[], 'readwrite'>, apps: AndroidApp[]): Promise<void> {
   const appsStore = tx.objectStore(APPS_STORE);
   await appsStore.clear();
   for (const app of apps) {

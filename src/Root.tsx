@@ -1,46 +1,51 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Snackbar, Alert, Button } from '@mui/material'
 import App from './App'
-import { registerServiceWorker } from './registerServiceWorker'
+import { useRegisterSW } from 'virtual:pwa-register/react'
 
 export default function Root() {
-  const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegistered(r) {
+      console.log('Service worker registered successfully');
+      // Check for updates every hour
+      if (r) {
+        intervalRef.current = setInterval(() => {
+          r.update();
+        }, 60 * 60 * 1000);
+      }
+    },
+    onRegisterError(error) {
+      console.error('Service worker registration failed:', error);
+    },
+  });
+
+  // Cleanup interval on unmount
   useEffect(() => {
-    // Register service worker with update detection
-    const cleanup = registerServiceWorker({
-      onUpdate: (reg) => {
-        console.log('App update available');
-        setUpdateAvailable(true);
-        setRegistration(reg);
-      },
-      onSuccess: () => {
-        console.log('Service worker registered successfully');
-      },
-    });
-
-    // Cleanup interval on unmount
-    return cleanup;
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, []);
 
   const handleUpdateClick = () => {
-    if (registration?.waiting) {
-      // Tell the service worker to skip waiting and become active
-      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      setUpdateAvailable(false);
-    }
+    updateServiceWorker(true);
   };
 
   const handleUpdateDismiss = () => {
-    setUpdateAvailable(false);
+    setNeedRefresh(false);
   };
 
   return (
     <>
       <App />
       <Snackbar
-        open={updateAvailable}
+        open={needRefresh}
         onClose={handleUpdateDismiss}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
