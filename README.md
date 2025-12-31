@@ -120,6 +120,23 @@ Once installed, the PWA includes:
 - **Service Worker caching**: Fast loading and reliable performance
 - **Installable**: Works like a native app on your device
 
+### Automatic Updates
+
+The PWA automatically checks for updates and notifies you when a new version is available:
+
+1. **Update Detection**: The app checks for updates:
+   - Immediately when you open or reload the app
+   - Every hour while the app is open
+2. **User Notification**: When an update is available, you'll see a blue notification bar at the bottom of the screen with an "UPDATE" button
+3. **User Control**: Click the "UPDATE" button to apply the update and reload the app
+4. **Seamless Experience**: Updates are applied instantly without losing your data
+
+**How it works:**
+- Each deployment generates a unique version based on build timestamp
+- The service worker caches assets using this version
+- When a new deployment occurs, the old cache is automatically cleaned up
+- Your data in IndexedDB is never affected by updates
+
 ## Technology Stack
 
 - **React 19** - UI framework
