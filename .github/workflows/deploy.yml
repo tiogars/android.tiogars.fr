@@ -16,15 +16,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
+      # Step 1: Checkout
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # Step 2: Set tools & env
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
@@ -39,6 +41,15 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Step 4: Build (validate current code before versioning)
+      - name: Build
+        run: pnpm run build
+
+      # Step 5: Bump version (only after successful build)
       - name: Bump version
         id: version
         run: |
@@ -47,8 +58,6 @@ jobs:
           echo "Current version: $CURRENT_VERSION"
           
           # Parse version components (e.g., 1.0.0 -> 1 0 0)
-          # Note: This assumes basic semantic versioning (MAJOR.MINOR.PATCH)
-          # Pre-release identifiers and build metadata are not supported
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
           
           # Increment patch version
@@ -58,14 +67,14 @@ jobs:
           echo "New version: $NEW_VERSION"
           echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
           
-          # Update package.json version using pnpm
+          # Update package.json version
           pnpm version "$NEW_VERSION" --no-git-tag-version
           
           # Commit version bump
           git add package.json
-          git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
+          git commit -m "chore: release version $NEW_VERSION [skip ci]"
           
-          # Push with retry logic and proper error handling
+          # Push with retry logic
           MAX_RETRIES=3
           for i in $(seq 1 "$MAX_RETRIES"); do
             echo "Push attempt $i of $MAX_RETRIES"
@@ -92,7 +101,7 @@ jobs:
                   # Reapply version bump
                   pnpm version "$NEW_VERSION" --no-git-tag-version
                   git add package.json
-                  git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
+                  git commit -m "chore: release version $NEW_VERSION [skip ci]"
                   sleep 2
                 fi
               else
@@ -102,12 +111,55 @@ jobs:
             fi
           done
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      # Step 6: Tag version
+      - name: Tag version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "Creating tag v$VERSION"
+          git tag -a "v$VERSION" -m "Release version $VERSION"
+          git push origin "v$VERSION"
 
-      - name: Build
-        run: pnpm run build
+      # Step 7: Release source version with release notes
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          # Get the previous tag
+          PREV_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed -n '2p')
+          
+          if [ -z "$PREV_TAG" ]; then
+            echo "No previous tag found, using initial commit"
+            PREV_TAG=$(git rev-list --max-parents=0 HEAD)
+          fi
+          
+          echo "Generating release notes from $PREV_TAG to v$VERSION"
+          
+          # Generate release notes
+          cat > release_notes.md <<EOF
+          ## What's Changed
+          
+          EOF
+          
+          # Get commits since last tag
+          git log "$PREV_TAG"..HEAD --pretty=format:"* %s (%h)" --no-merges >> release_notes.md
+          
+          echo "" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/$PREV_TAG...v$VERSION" >> release_notes.md
+          
+          cat release_notes.md
 
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release v${{ steps.version.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+
+      # Step 8: Deploy to GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
@@ -116,13 +168,29 @@ jobs:
         with:
           path: ./dist
 
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # Step 9: Prepare next version (bump to next dev version)
+      - name: Prepare next development version
+        run: |
+          CURRENT_VERSION="${{ steps.version.outputs.version }}"
+          echo "Current release version: $CURRENT_VERSION"
+          
+          # Parse version components
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+          
+          # Increment patch version for next dev cycle
+          PATCH=$((PATCH + 1))
+          NEXT_VERSION="$MAJOR.$MINOR.$PATCH"
+          
+          echo "Next development version: $NEXT_VERSION"
+          
+          # Update package.json version
+          pnpm version "$NEXT_VERSION" --no-git-tag-version
+          
+          # Commit next version
+          git add package.json
+          git commit -m "chore: prepare next development version $NEXT_VERSION [skip ci]"
+          git push
