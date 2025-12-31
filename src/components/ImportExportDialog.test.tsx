@@ -157,10 +157,9 @@ describe('ImportExportDialog', () => {
   it('should not render when open is false', () => {
     const { container } = render(<ImportExportDialog {...defaultProps} open={false} />);
     
-    const dialog = container.querySelector('[role="presentation"]');
-    if (dialog) {
-      expect(dialog).toHaveStyle({ visibility: 'hidden' });
-    }
+    // When closed, dialog content should not be in the document
+    const dialog = container.querySelector('[role="dialog"]');
+    expect(dialog).not.toBeInTheDocument();
   });
 
   it('should show upload button in Import tab', () => {

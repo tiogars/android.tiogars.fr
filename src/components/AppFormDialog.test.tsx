@@ -200,11 +200,9 @@ describe('AppFormDialog', () => {
   it('should not render when open is false', () => {
     const { container } = render(<AppFormDialog {...defaultProps} open={false} />);
     
-    // MUI Dialog renders with display:none when closed, so check for that
-    const dialog = container.querySelector('[role="presentation"]');
-    if (dialog) {
-      expect(dialog).toHaveStyle({ visibility: 'hidden' });
-    }
+    // When closed, dialog content should not be in the document
+    const dialog = container.querySelector('[role="dialog"]');
+    expect(dialog).not.toBeInTheDocument();
   });
 
   it('should reset form when dialog is reopened', async () => {
