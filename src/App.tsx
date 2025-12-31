@@ -90,54 +90,66 @@ function App() {
     (async () => {
       const savedApps = await storageService.getApps();
       setApps(savedApps);  
+
+      // Handle share target
+      const params = new URLSearchParams(window.location.search);
+      const sharedTitle = params.get('title');
+      const sharedText = params.get('text');
+      const sharedUrl = params.get('url');
+
+      if (sharedTitle || sharedText || sharedUrl) {
+        // Extract package name from Play Store URL
+        let packageName = '';
+        if (sharedUrl) {
+          try {
+            const url = new URL(sharedUrl);
+            // Validate that the hostname is play.google.com (with or without www.)
+            if (url.hostname === 'play.google.com' || url.hostname === 'www.play.google.com') {
+              packageName = url.searchParams.get('id') || '';
+            }
+          } catch (error) {
+            // Invalid URL, packageName remains empty
+            console.warn('Failed to parse shared URL:', error);
+          }
+        }
+
+        // Check if package name already exists
+        if (packageName) {
+          const existingApp = savedApps.find((app: AndroidApp) => app.packageName === packageName);
+          if (existingApp) {
+            // Alert the user that the app already exists
+            setSnackbar({ open: true, message: `App "${existingApp.name}" already exists`, severity: 'info' });
+            // Clear the URL parameters
+            window.history.replaceState({}, '', window.location.pathname);
+            return;
+          }
+        }
+
+        // Create a new app with shared data
+        // Extract app name from title (removes "Découvrez '...' sur Google Play" wrapper)
+        const appName = extractAppNameFromTitle(sharedTitle || '');
+        
+        const newApp: AndroidApp = {
+          id: crypto.randomUUID(),
+          name: appName,
+          packageName: packageName || '',
+          description: sharedText || '',
+          category: [],
+          icon: '',
+        };
+
+        setEditingApp(newApp);
+        setIsFormOpen(true);
+
+        // Clear the URL parameters
+        window.history.replaceState({}, '', window.location.pathname);
+      }
     })();
 
     // Load theme preference
     const savedTheme = localStorage.getItem('theme-mode') as ThemeMode;
     if (savedTheme) {
       setThemeMode(savedTheme); // eslint-disable-line react-hooks/set-state-in-effect
-    }
-
-    // Handle share target
-    const params = new URLSearchParams(window.location.search);
-    const sharedTitle = params.get('title');
-    const sharedText = params.get('text');
-    const sharedUrl = params.get('url');
-
-    if (sharedTitle || sharedText || sharedUrl) {
-      // Extract package name from Play Store URL
-      let packageName = '';
-      if (sharedUrl) {
-        try {
-          const url = new URL(sharedUrl);
-          // Validate that the hostname is play.google.com (with or without www.)
-          if (url.hostname === 'play.google.com' || url.hostname === 'www.play.google.com') {
-            packageName = url.searchParams.get('id') || '';
-          }
-        } catch (error) {
-          // Invalid URL, packageName remains empty
-          console.warn('Failed to parse shared URL:', error);
-        }
-      }
-
-      // Create a new app with shared data
-      // Extract app name from title (removes "Découvrez '...' sur Google Play" wrapper)
-      const appName = extractAppNameFromTitle(sharedTitle || '');
-      
-      const newApp: AndroidApp = {
-        id: crypto.randomUUID(),
-        name: appName,
-        packageName: packageName || '',
-        description: sharedText || '',
-        category: [],
-        icon: '',
-      };
-
-      setEditingApp(newApp);
-      setIsFormOpen(true);
-
-      // Clear the URL parameters
-      window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
 
