@@ -117,7 +117,27 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           echo "Creating tag v$VERSION"
           git tag -a "v$VERSION" -m "Release version $VERSION"
-          git push origin "v$VERSION"
+          
+          # Push tag with retry logic
+          MAX_RETRIES=3
+          for i in $(seq 1 "$MAX_RETRIES"); do
+            echo "Tag push attempt $i of $MAX_RETRIES"
+            
+            if git push origin "v$VERSION"; then
+              echo "Successfully pushed tag"
+              break
+            else
+              echo "Tag push failed on attempt $i"
+              
+              if [ "$i" -lt "$MAX_RETRIES" ]; then
+                echo "Retrying after delay..."
+                sleep 2
+              else
+                echo "Failed to push tag after $MAX_RETRIES attempts"
+                exit 1
+              fi
+            fi
+          done
 
       # Step 7: Release source version with release notes
       - name: Generate release notes
@@ -125,8 +145,11 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           
-          # Get the previous tag
-          PREV_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed -n '2p')
+          # Fetch all tags from remote to ensure we have complete tag list
+          git fetch --tags
+          
+          # Get the previous tag (excluding the current one we just created)
+          PREV_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^v$VERSION$" | head -n 1)
           
           if [ -z "$PREV_TAG" ]; then
             echo "No previous tag found, using initial commit"
@@ -171,6 +194,8 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Step 9: Prepare next version (bump to next dev version)
       - name: Prepare next development version
@@ -193,4 +218,31 @@ jobs:
           # Commit next version
           git add package.json
           git commit -m "chore: prepare next development version $NEXT_VERSION [skip ci]"
-          git push
+          
+          # Push with retry logic
+          MAX_RETRIES=3
+          for i in $(seq 1 "$MAX_RETRIES"); do
+            echo "Push attempt $i of $MAX_RETRIES"
+            
+            if git push; then
+              echo "Successfully pushed next version"
+              break
+            else
+              echo "Push failed on attempt $i"
+              
+              if [ "$i" -lt "$MAX_RETRIES" ]; then
+                echo "Pulling latest changes and rebasing..."
+                if git pull --rebase origin main; then
+                  echo "Rebase successful, retrying push..."
+                  sleep 2
+                else
+                  echo "Rebase failed, retrying..."
+                  git rebase --abort 2>/dev/null || true
+                  sleep 2
+                fi
+              else
+                echo "Failed to push after $MAX_RETRIES attempts"
+                exit 1
+              fi
+            fi
+          done
