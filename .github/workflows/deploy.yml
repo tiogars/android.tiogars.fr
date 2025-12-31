@@ -45,6 +45,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Step 3.5: Run tests with coverage
+      - name: Run tests with coverage
+        run: pnpm test:coverage -- --run
+
       # Step 4: Build (validate current code before versioning)
       - name: Build
         run: pnpm run build

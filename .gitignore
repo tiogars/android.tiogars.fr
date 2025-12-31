@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Test coverage
+coverage
+
 # Lock files (using pnpm)
 package-lock.json
 yarn.lock
