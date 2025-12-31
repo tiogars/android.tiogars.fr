@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import {
   ThemeProvider,
@@ -13,6 +13,7 @@ import {
   SpeedDialAction,
   Snackbar,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import {
   Brightness4,
@@ -27,11 +28,13 @@ import {
 } from '@mui/icons-material';
 import type { AndroidApp, ThemeMode } from './types';
 import { storageService } from './storageService';
-import Home from './components/Home';
-import AppDetail from './components/AppDetail';
-import AppFormDialog from './components/AppFormDialog';
-import ImportExportDialog from './components/ImportExportDialog';
 import Footer from './components/Footer';
+
+// Lazy load components for code splitting
+const Home = lazy(() => import('./components/Home'));
+const AppDetail = lazy(() => import('./components/AppDetail'));
+const AppFormDialog = lazy(() => import('./components/AppFormDialog'));
+const ImportExportDialog = lazy(() => import('./components/ImportExportDialog'));
 
 /**
  * Extracts the app name from a shared title.
@@ -256,21 +259,33 @@ function App() {
           <Route
             path="/"
             element={
-              <Home
-                apps={apps}
-                onEdit={handleEditApp}
-                onDelete={handleDeleteApp}
-              />
+              <Suspense fallback={
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+                  <CircularProgress />
+                </Box>
+              }>
+                <Home
+                  apps={apps}
+                  onEdit={handleEditApp}
+                  onDelete={handleDeleteApp}
+                />
+              </Suspense>
             }
           />
           <Route
             path="/app/:id"
             element={
-              <AppDetail
-                apps={apps}
-                onEdit={handleEditApp}
-                onDelete={handleDeleteApp}
-              />
+              <Suspense fallback={
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+                  <CircularProgress />
+                </Box>
+              }>
+                <AppDetail
+                  apps={apps}
+                  onEdit={handleEditApp}
+                  onDelete={handleDeleteApp}
+                />
+              </Suspense>
             }
           />
         </Routes>
@@ -317,22 +332,26 @@ function App() {
         />
       </SpeedDial>
 
-      <AppFormDialog
-        open={isFormOpen}
-        app={editingApp}
-        onClose={() => {
-          setIsFormOpen(false);
-          setEditingApp(null);
-        }}
-        onSave={handleSaveApp}
-      />
+      <Suspense fallback={null}>
+        <AppFormDialog
+          open={isFormOpen}
+          app={editingApp}
+          onClose={() => {
+            setIsFormOpen(false);
+            setEditingApp(null);
+          }}
+          onSave={handleSaveApp}
+        />
+      </Suspense>
 
-      <ImportExportDialog
-        open={isImportExportOpen}
-        onClose={() => setIsImportExportOpen(false)}
-        onImport={handleImport}
-        onExport={handleExport}
-      />
+      <Suspense fallback={null}>
+        <ImportExportDialog
+          open={isImportExportOpen}
+          onClose={() => setIsImportExportOpen(false)}
+          onImport={handleImport}
+          onExport={handleExport}
+        />
+      </Suspense>
 
       <Snackbar
         open={snackbar.open}

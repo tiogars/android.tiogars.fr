@@ -10,6 +10,18 @@ export default defineConfig({
   define: {
     '__APP_VERSION__': JSON.stringify(packageJson.version),
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'mui-core': ['@mui/material'],
+          'mui-icons': ['@mui/icons-material'],
+          'emotion': ['@emotion/react', '@emotion/styled'],
+        }
+      }
+    }
+  },
   plugins: [
     react(),
     VitePWA({
