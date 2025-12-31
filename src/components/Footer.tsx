@@ -5,7 +5,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
   const inceptionYear = 2025;
   const copyrightYear = inceptionYear === currentYear ? `${inceptionYear}` : `${inceptionYear}-${currentYear}`;
-  const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
+  const appVersion = __APP_VERSION__;
 
   const handleRepoClick = () => {
     window.open('https://github.com/tiogars/android.tiogars.fr', '_blank', 'noopener,noreferrer');
