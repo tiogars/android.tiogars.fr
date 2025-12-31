@@ -110,8 +110,8 @@ function App() {
       if (sharedUrl) {
         try {
           const url = new URL(sharedUrl);
-          // Validate that the hostname is exactly play.google.com
-          if (url.hostname === 'play.google.com') {
+          // Validate that the hostname is play.google.com (with or without www.)
+          if (url.hostname === 'play.google.com' || url.hostname === 'www.play.google.com') {
             packageName = url.searchParams.get('id') || '';
           }
         } catch (error) {
