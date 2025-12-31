@@ -49,6 +49,13 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      # Step 4.5: SonarQube Scan
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
       # Step 5: Bump version (only after successful build)
       - name: Bump version
         id: version
