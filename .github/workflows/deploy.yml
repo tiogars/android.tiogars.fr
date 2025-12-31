@@ -47,6 +47,8 @@ jobs:
           echo "Current version: $CURRENT_VERSION"
           
           # Parse version components (e.g., 1.0.0 -> 1 0 0)
+          # Note: This assumes basic semantic versioning (MAJOR.MINOR.PATCH)
+          # Pre-release identifiers and build metadata are not supported
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
           
           # Increment patch version
@@ -54,7 +56,7 @@ jobs:
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           
           echo "New version: $NEW_VERSION"
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
           
           # Update package.json version using pnpm
           pnpm version "$NEW_VERSION" --no-git-tag-version
@@ -65,7 +67,7 @@ jobs:
           
           # Push with retry logic and proper error handling
           MAX_RETRIES=3
-          for i in $(seq 1 $MAX_RETRIES); do
+          for i in $(seq 1 "$MAX_RETRIES"); do
             echo "Push attempt $i of $MAX_RETRIES"
             
             if git push; then
@@ -74,7 +76,7 @@ jobs:
             else
               echo "Push failed on attempt $i"
               
-              if [ $i -lt $MAX_RETRIES ]; then
+              if [ "$i" -lt "$MAX_RETRIES" ]; then
                 echo "Pulling latest changes and rebasing..."
                 if git pull --rebase origin main; then
                   echo "Rebase successful, retrying push..."
