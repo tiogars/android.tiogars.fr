@@ -38,7 +38,7 @@ export default function Footer() {
       }}
     >
       <Container maxWidth="lg">
-        <Stack spacing={2} alignItems="center">
+        <Stack spacing={2} sx={{ alignItems: 'center' }}>
           {/* Copyright and Version */}
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary">

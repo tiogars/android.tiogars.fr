@@ -265,12 +265,12 @@ function App() {
       >
         <SpeedDialAction
           icon={<HomeIcon />}
-          tooltipTitle="Home"
+          title="Home"
           onClick={handleNavigateHome}
         />
         <SpeedDialAction
           icon={<AddIcon />}
-          tooltipTitle="Add App"
+          title="Add App"
           onClick={() => {
             handleAddNew();
             setIsSpeedDialOpen(false);
@@ -278,7 +278,7 @@ function App() {
         />
         <SpeedDialAction
           icon={<ImportIcon />}
-          tooltipTitle="Import"
+          title="Import"
           onClick={() => {
             setIsImportExportOpen(true);
             setIsSpeedDialOpen(false);
@@ -286,7 +286,7 @@ function App() {
         />
         <SpeedDialAction
           icon={<ExportIcon />}
-          tooltipTitle="Export"
+          title="Export"
           onClick={() => {
             handleExport();
             setIsSpeedDialOpen(false);

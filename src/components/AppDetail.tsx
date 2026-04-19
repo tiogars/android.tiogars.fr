@@ -113,7 +113,7 @@ export default function AppDetail({ apps, onEdit, onDelete }: AppDetailProps) {
         <Typography variant="h6" gutterBottom>
           Description
         </Typography>
-        <Typography variant="body1" paragraph sx={{ whiteSpace: 'pre-wrap' }}>
+        <Typography variant="body1" component="p" sx={{ whiteSpace: 'pre-wrap', mb: 2 }}>
           {app.description || 'No description available.'}
         </Typography>
 
