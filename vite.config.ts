@@ -30,10 +30,26 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'mui-core': ['@mui/material'],
-          'mui-icons': ['@mui/icons-material'],
+        manualChunks: (id) => {
+          const normalizedId = id.replace(/\\/g, '/')
+
+          if (normalizedId.includes('node_modules/@mui/icons-material/')) {
+            return 'mui-icons'
+          }
+
+          if (normalizedId.includes('node_modules/@mui/material/')) {
+            return 'mui-core'
+          }
+
+          if (
+            normalizedId.includes('node_modules/react/') ||
+            normalizedId.includes('node_modules/react-dom/') ||
+            normalizedId.includes('node_modules/react-router-dom/')
+          ) {
+            return 'react-vendor'
+          }
+
+          return undefined
         }
       }
     }

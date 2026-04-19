@@ -135,7 +135,8 @@ export const storageService = {
       await this.saveApps(apps);
       return apps as AndroidApp[];
     } catch (error) {
-      throw new Error(`Failed to import data: ${(error as Error).message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to import data: ${message}`, { cause: error });
     }
   },
 };
