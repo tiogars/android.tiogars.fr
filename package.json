@@ -20,8 +20,8 @@
     "idb": "^8.0.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.14.1",
-    "workbox-window": "^7.4.0"
+    "react-router-dom": "^7.14.2",
+    "workbox-window": "^7.4.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
